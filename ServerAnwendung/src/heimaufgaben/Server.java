@@ -5,51 +5,54 @@ import java.net.*;
 import java.util.Scanner;
 
 public class Server {
-    Socket socket = null;
+    Socket clientSocket;
+    ServerSocket serverSocket = null;
+    DataInputStream in = null;
+    DataOutputStream out = null;
 
     public Server(int port) {
         try {
-            ServerSocket server = new ServerSocket(port);
-            System.out.println("Server started:\n Enter Port:");
+            serverSocket = new ServerSocket(port);
+            System.out.println("Server wurde gestartet:\n geben Sie die Port Nummer ein:");
 
-            socket = server.accept();
-            Scanner sc = new Scanner(socket.getInputStream());
+
+            Scanner sc = new Scanner(System.in);
             String Port = sc.nextLine();
 
             if (Integer.parseInt(Port)!=port){
                 System.out.println("KEIN KORREKTER PORT \n Aktuell ist nur der Port 2022 moeglich");
             }
             else {
-                System.out.println("Eingabe ist richtig");
-                // takes input from the client socket
-                DataInputStream in = null;
-                try {
-                    in = new DataInputStream(
-                            new BufferedInputStream(socket.getInputStream()));
-                    String line = "";
+                System.out.println("Eingabe ist richtig"); //wenn port richtig eingegeben ist
+                clientSocket = serverSocket.accept();
+                System.out.println("client ist verbunden...");
 
-                    // reads message from client until "Done" is sent
-                    while (!line.equals("Done")) {
-                        try {
-                            line = in.readUTF();
-                            System.out.println(line);
+                in = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
+                out = new DataOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
 
-                        } catch (IOException i) {
-                            System.out.println(i);
-                        }
+                BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                String serverNachricht,clientNachricht = "";
+
+                // reads message from client until "Done" is sent
+                while (!clientNachricht.equals("Fertig")) {
+                    try {
+                        clientNachricht = in.readUTF();
+                        System.out.println("Anfrage vom Client:\n"+clientNachricht);
+                        serverNachricht = br.readLine();
+                        out.writeUTF(serverNachricht);
+                        //out.flush();
+
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
-                    System.out.println("Closing connection");
-
-                    // close connection
-                    socket.close();
-                    in.close();
-
-
-
-
-                } catch (IOException i) {
-                System.out.println(i);
                 }
+                System.out.println("Verbindung geschlossen");
+
+                // close connection
+                serverSocket.close();
+                clientSocket.close();
+                in.close();
+
             }
 
         } catch (IOException e) {
