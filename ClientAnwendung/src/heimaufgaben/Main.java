@@ -16,8 +16,7 @@ public class Main {
 
 
          */
-        Client client = new Client();
-        client.scan();
+        Client client = new Client("localhost",2022);
         System.out.println("Der Client wurde beendet.");
 
     }

@@ -1,43 +1,57 @@
 package heimaufgaben;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
 import java.util.Scanner;
 
-public class Server{
-    public static void scanPort() {
-        String login_Port = "2022";
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Enter Port");
+public class Server {
+    Socket socket = null;
 
-        String Port = sc.nextLine();
-        if (!Port.equals(login_Port)){
-            System.out.println("KEIN KORREKTER PORT \n Aktuell ist nur der Port 2022 moeglich");
-        }
-        else {
-            System.out.println("Eingabe ist richtig");
-        }
-    }
-
-    public Server() {
-        ServerSocket socket = null;
+    public Server(int port) {
         try {
-            socket = new ServerSocket(2022);
+            ServerSocket server = new ServerSocket(port);
+            System.out.println("Server started:\n Enter Port:");
 
-            while (true) //TODO
-            {
-                Socket client = socket.accept();
-                PrintWriter out = new PrintWriter(client.getOutputStream());
-                Scanner in = new Scanner(client.getInputStream());
+            socket = server.accept();
+            Scanner sc = new Scanner(socket.getInputStream());
+            String Port = sc.nextLine();
 
-                String s = in.nextLine();
-                s = s.toLowerCase();
-                out.println(s);
-                out.flush();
-                out.close();
+            if (Integer.parseInt(Port)!=port){
+                System.out.println("KEIN KORREKTER PORT \n Aktuell ist nur der Port 2022 moeglich");
             }
+            else {
+                System.out.println("Eingabe ist richtig");
+                // takes input from the client socket
+                DataInputStream in = null;
+                try {
+                    in = new DataInputStream(
+                            new BufferedInputStream(socket.getInputStream()));
+                    String line = "";
+
+                    // reads message from client until "Done" is sent
+                    while (!line.equals("Done")) {
+                        try {
+                            line = in.readUTF();
+                            System.out.println(line);
+
+                        } catch (IOException i) {
+                            System.out.println(i);
+                        }
+                    }
+                    System.out.println("Closing connection");
+
+                    // close connection
+                    socket.close();
+                    in.close();
+
+
+
+
+                } catch (IOException i) {
+                System.out.println(i);
+                }
+            }
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

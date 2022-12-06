@@ -1,6 +1,6 @@
 package heimaufgaben;
 
-import java.io.IOException;
+import java.io.*;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
@@ -63,25 +63,49 @@ public class Client {
         }
     }
 
-    public Client(){
-        Socket socket = null;
+    private Socket socket = null;
+    private DataInputStream input = null;
+    private DataOutputStream output = null;
+    public Client(String address, int port) {
         try {
-            socket = new Socket(login_Address,Integer.parseInt(login_Port));
-            PrintWriter  out = new PrintWriter(socket.getOutputStream());
+            socket = new Socket(address, port);
+            input = new DataInputStream(System.in);
+            output = new DataOutputStream(System.out);
+
+            /*
+            PrintWriter out = new PrintWriter(socket.getOutputStream());
             Scanner in = new Scanner(socket.getInputStream());
             System.out.println("connected");
 
             Scanner sc = new Scanner(System.in);
             System.out.println("Enter Something");
             String s = sc.nextLine();
+
             out.println(s);
             out.flush();
             out.close();
+             */
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        String line = "";
+        //below line is to read message from input
+        while (!(line.equals("Done"))) {
+            try {
+                line = input.readLine();
+                output.writeUTF(line);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
-        catch (IOException e) {
-            throw new RuntimeException(e);
+        //below code to close the connection
+        try {
+            input.close();
+            output.close();
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
     }
 }
