@@ -2,7 +2,7 @@ package heimaufgaben;
 
 import java.io.*;
 import java.net.*;
-import java.util.Scanner;
+import java.util.*;
 
 public class Server {
     Socket clientSocket;
@@ -14,7 +14,6 @@ public class Server {
         try {
             serverSocket = new ServerSocket(port);
             System.out.println("Server wurde gestartet:\n geben Sie die Port Nummer ein:");
-
 
             Scanner sc = new Scanner(System.in);
             String Port = sc.nextLine();
