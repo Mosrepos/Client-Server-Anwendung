@@ -11,7 +11,7 @@ public class Client {
     public Client(String address, int port) {
         try {
             socket = new Socket(address, port);
-            System.out.println("Client wurde gestartet: \n geben Sie die IP-Addresse ein:");
+            System.out.println("Client wurde gestartet: \n geben Sie die IP-Adresse ein:");
 
             Scanner sc = new Scanner(System.in);
             String IP = sc.nextLine();
@@ -21,18 +21,21 @@ public class Client {
                 System.out.println("geben Sie die Port Nummer ein:");
                 String Port = sc.nextLine();
                 if (Integer.parseInt(Port)==port){
-                    System.out.println("Eingabe ist richtig");
+                    System.out.println("Eingabe ist richtig\n Sie können jetzt ihre Anfragen an den Server schicken..");
 
                     in = new DataInputStream(System.in);
                     out = new DataOutputStream(socket.getOutputStream());
 
                     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-                    String clientNachricht = "";
+                    String serverNachricht,clientNachricht = "";
 
                     while (!clientNachricht.equals("Fertig")) {
                         try {
-                            clientNachricht = in.readLine();
+                            clientNachricht = br.readLine();
                             out.writeUTF(clientNachricht);
+                            out.flush();
+                            serverNachricht = in.readUTF();
+                            System.out.println(serverNachricht);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }

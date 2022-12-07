@@ -2,11 +2,13 @@ package heimaufgaben;
 
 import java.io.*;
 import java.net.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 
 public class Server {
     Socket clientSocket;
-    ServerSocket serverSocket = null;
+    ServerSocket serverSocket;
     DataInputStream in = null;
     DataOutputStream out = null;
 
@@ -19,7 +21,7 @@ public class Server {
             String Port = sc.nextLine();
 
             if (Integer.parseInt(Port)!=port){
-                System.out.println("KEIN KORREKTER PORT \n Aktuell ist nur der Port 2022 moeglich");
+                System.out.println("KEIN KORREKTER PORT \n Aktuell ist nur der Port 2022 möglich");
             }
             else {
                 System.out.println("Eingabe ist richtig"); //wenn port richtig eingegeben ist
@@ -36,10 +38,31 @@ public class Server {
                 while (!clientNachricht.equals("Fertig")) {
                     try {
                         clientNachricht = in.readUTF();
-                        System.out.println("Anfrage vom Client:\n"+clientNachricht);
-                        serverNachricht = br.readLine();
+                        //System.out.println("Anfrage vom Client:\n"+clientNachricht);
+                        String time = LocalTime.now().toString();
+                        String date = LocalDate.now().toString();
+                        switch (clientNachricht) {
+                            case "PING" -> {
+                                System.out.println("PONG");
+                                serverNachricht  = "PONG";
+                            }
+                            //case "ECHO": ;
+                            case "CURRENT TIME" -> {
+                                System.out.println("TIME " + time);
+                                serverNachricht  = time;
+                                //out.writeUTF(time);
+                            }
+                            case "CURRENT DATE" -> {
+                                System.out.println("DATE " + date);
+                                serverNachricht  = date;
+                                //out.writeUTF(date);
+                            }
+                            //case "HISTORY" :;
+                            default -> serverNachricht = "BAD REQUEST";
+                        }
+                        //serverNachricht = br.readLine();
                         out.writeUTF(serverNachricht);
-                        //out.flush();
+                        out.flush();
 
                     } catch (IOException e) {
                         throw new RuntimeException(e);
