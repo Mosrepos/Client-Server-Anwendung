@@ -89,19 +89,20 @@ public class Server {
                                     System.out.println("ERROR 404 NOT FOUND");
                                     serverNachricht = "404 NOT FOUND";
                                 } else {
-                                    StringBuilder serverNachrichtBuilder = new StringBuilder(serverNachricht);
-                                    for (String i : verlauf) {
-                                        serverNachrichtBuilder.append(i).append("\n");
+                                    //StringBuilder serverNachrichtBuilder = new StringBuilder(serverNachricht);
+                                    for (int i = 0; i < verlauf.size() - 1; i++) {
+                                        //serverNachrichtBuilder.append(i).append("\n");
+                                        serverNachricht = serverNachricht + "\n" + verlauf.get(i);
 
                                     }
-                                    serverNachricht = serverNachrichtBuilder.toString();
+                                    //serverNachricht = serverNachrichtBuilder.toString();
                                 }
                                 out.writeUTF(serverNachricht);
                                 out.flush();
                             }
                             case "LATEST NEWS" -> {
 
-                                // TODO
+                                // TODO api letzte Nachrichten
                             }
                             default -> {
                                 if (clientNachricht.startsWith("ECHO")) {
@@ -118,7 +119,7 @@ public class Server {
                                     } else {
                                         int numberOfRequests = Integer.parseInt(clientNachricht.substring(8));
                                         for (int i = verlauf.size() - numberOfRequests - 1; i < verlauf.size() - 1; i++) {
-                                            serverNachricht = serverNachricht + verlauf.get(i) + "\n";
+                                            serverNachricht = serverNachricht + "\n" + verlauf.get(i);
                                         }
                                     }
                                     out.writeUTF(serverNachricht);
@@ -126,7 +127,7 @@ public class Server {
                                 } else if (clientNachricht.startsWith("HOLIDAYS")) {
                                     int year = Integer.parseInt(clientNachricht.substring(9));
 
-                                    //TODO
+                                    //TODO api Feiertage
                                 } else {
                                     System.out.println("ERROR 400 BAD REQUEST");
                                     serverNachricht = "400 BAD REQUEST";
@@ -147,7 +148,6 @@ public class Server {
                 serverSocket.close();
                 clientSocket.close();
                 in.close();
-
             }
 
         } catch (IOException e) {

@@ -18,21 +18,12 @@ public class Client {
         }
     }
     public void startClient(){
-
-
         String serverNachricht,clientNachricht = "";
-
-        try {
-            in = new DataInputStream(socket.getInputStream());
-            out = new DataOutputStream(socket.getOutputStream());
-            //out.writeUTF(verbunden);
-            out.flush();
-        } catch (IOException e){
-            e.printStackTrace();
-        }
 
         while (!clientNachricht.equals("EXIT")) {
             try {
+                in = new DataInputStream(socket.getInputStream());
+                out = new DataOutputStream(socket.getOutputStream());
                 BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
                 clientNachricht = br.readLine();
                 out.writeUTF(clientNachricht);
