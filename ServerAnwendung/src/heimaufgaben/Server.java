@@ -41,10 +41,9 @@ public class Server {
                 LinkedList<String> verlauf = new LinkedList<>();
 
                 // reads message from client until "Done" is sent
-                while (!clientNachricht.equals("Fertig")) {
+                while (!clientNachricht.equals("EXIT")) {
                     in = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
                     out = new DataOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
-
 
 
                     try {
@@ -90,16 +89,19 @@ public class Server {
                                     System.out.println("ERROR 404 NOT FOUND");
                                     serverNachricht = "404 NOT FOUND";
                                 } else {
+                                    StringBuilder serverNachrichtBuilder = new StringBuilder(serverNachricht);
                                     for (String i : verlauf) {
-                                        serverNachricht = serverNachricht + i + "\n";
+                                        serverNachrichtBuilder.append(i).append("\n");
 
                                     }
+                                    serverNachricht = serverNachrichtBuilder.toString();
                                 }
                                 out.writeUTF(serverNachricht);
                                 out.flush();
                             }
                             case "LATEST NEWS" -> {
 
+                                // TODO
                             }
                             default -> {
                                 if (clientNachricht.startsWith("ECHO")) {
@@ -124,6 +126,7 @@ public class Server {
                                 } else if (clientNachricht.startsWith("HOLIDAYS")) {
                                     int year = Integer.parseInt(clientNachricht.substring(9));
 
+                                    //TODO
                                 } else {
                                     System.out.println("ERROR 400 BAD REQUEST");
                                     serverNachricht = "400 BAD REQUEST";
