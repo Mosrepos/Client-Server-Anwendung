@@ -1,7 +1,7 @@
 package heimaufgaben;
 
 import java.io.*;
-import java.net.*;
+import java.net.Socket;
 
 public class Client {
     Socket socket = null;
@@ -31,7 +31,7 @@ public class Client {
             e.printStackTrace();
         }
 
-        while (!clientNachricht.equals("Fertig")) {
+        while (!clientNachricht.equals("EXIT")) {
             try {
                 BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
                 clientNachricht = br.readLine();

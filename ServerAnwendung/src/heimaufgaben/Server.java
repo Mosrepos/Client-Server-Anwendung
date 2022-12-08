@@ -1,10 +1,12 @@
 package heimaufgaben;
 
 import java.io.*;
-import java.net.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.Scanner;
 
 public class Server {
     Socket clientSocket;
@@ -76,52 +78,56 @@ public class Server {
                             }
 
 
-                            case "Fertig" -> {
+                            case "EXIT" -> {
                                 serverNachricht = "Verbindung wird geschlossen!";
                                 out.writeUTF(serverNachricht);
                                 out.flush();
                             }
+
                             case "HISTORY" -> {
                                 serverNachricht = "";
                                 System.out.println("HISTORY");
                                 if(verlauf.size() == 1){
                                     System.out.println("ERROR 404 NOT FOUND");
                                     serverNachricht = "404 NOT FOUND";
-                                }
-                                else {
-                                    for (String i : verlauf){
-                                        serverNachricht = serverNachricht + i +"\n";
+                                } else {
+                                    for (String i : verlauf) {
+                                        serverNachricht = serverNachricht + i + "\n";
 
                                     }
                                 }
                                 out.writeUTF(serverNachricht);
                                 out.flush();
                             }
+                            case "LATEST NEWS" -> {
+
+                            }
                             default -> {
-                                if (clientNachricht.startsWith("ECHO")){
+                                if (clientNachricht.startsWith("ECHO")) {
                                     System.out.println(clientNachricht);
                                     serverNachricht = clientNachricht.substring(5);
                                     out.writeUTF(serverNachricht);
                                     out.flush();
-                                }
-                                else if (clientNachricht.startsWith("HISTORY")){
+                                } else if (clientNachricht.startsWith("HISTORY")) {
                                     serverNachricht = "";
                                     System.out.println("HISTORY");
                                     if(verlauf.size() == 1){
                                         System.out.println("ERROR 404 NOT FOUND");
                                         serverNachricht = "404 NOT FOUND";
-                                    }
-                                    else {
+                                    } else {
                                         int numberOfRequests = Integer.parseInt(clientNachricht.substring(8));
-                                        for (int i = verlauf.size()-numberOfRequests-1; i<verlauf.size()-1; i++){
-                                            serverNachricht = serverNachricht + verlauf.get(i) +"\n";
+                                        for (int i = verlauf.size() - numberOfRequests - 1; i < verlauf.size() - 1; i++) {
+                                            serverNachricht = serverNachricht + verlauf.get(i) + "\n";
                                         }
                                     }
                                     out.writeUTF(serverNachricht);
                                     out.flush();
-                                }
-                                else {
-                                    serverNachricht = "BAD REQUEST";
+                                } else if (clientNachricht.startsWith("HOLIDAYS")) {
+                                    int year = Integer.parseInt(clientNachricht.substring(9));
+
+                                } else {
+                                    System.out.println("ERROR 400 BAD REQUEST");
+                                    serverNachricht = "400 BAD REQUEST";
                                     out.writeUTF(serverNachricht);
                                     out.flush();
                                 }
