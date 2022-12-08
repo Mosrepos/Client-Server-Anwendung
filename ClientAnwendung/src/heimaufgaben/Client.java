@@ -2,58 +2,56 @@ package heimaufgaben;
 
 import java.io.*;
 import java.net.*;
-import java.util.*;
 
 public class Client {
-     Socket socket = null;
-     DataInputStream in = null;
-     DataOutputStream out = null;
-    public Client(String address, int port) {
+    Socket socket = null;
+    DataInputStream in = null;
+    DataOutputStream out = null;
+    int port = 2022;
+    //TODO ip adresse 127.0.0.1
+    String address = "localhost";
+    public Client() {
         try {
             socket = new Socket(address, port);
-            System.out.println("Client wurde gestartet: \n geben Sie die IP-Adresse ein:");
+        } catch (IOException e){
+            System.out.println("Es gibt ein Problem mit dem Socket");
+        }
+    }
+    public void startClient(){
 
-            Scanner sc = new Scanner(System.in);
-            String IP = sc.nextLine();
 
-            if (Objects.equals(IP, "127.0.0.1") || Objects.equals(IP, "localhost")){
-                System.out.println("Eingabe ist richtig");
-                System.out.println("geben Sie die Port Nummer ein:");
-                String Port = sc.nextLine();
-                if (Integer.parseInt(Port)==port){
-                    System.out.println("Eingabe ist richtig\n Sie können jetzt ihre Anfragen an den Server schicken..");
+        String serverNachricht,clientNachricht = "";
+        String verbunden = "Client ist verbunden..";
 
-                    in = new DataInputStream(System.in);
-                    out = new DataOutputStream(socket.getOutputStream());
 
-                    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-                    String serverNachricht,clientNachricht = "";
+        try {
+            in = new DataInputStream(socket.getInputStream());
+            out = new DataOutputStream(socket.getOutputStream());
+            //out.writeUTF(verbunden);
+            out.flush();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
 
-                    while (!clientNachricht.equals("Fertig")) {
-                        try {
-                            clientNachricht = br.readLine();
-                            out.writeUTF(clientNachricht);
-                            out.flush();
-                            serverNachricht = in.readUTF();
-                            System.out.println(serverNachricht);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    in.close();
-                    out.close();
-                    socket.close();
-                }
-                else {
-                    System.out.println("Kein korrekter Port");
-                }
+        while (!clientNachricht.equals("Fertig")) {
+            try {
+                BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                clientNachricht = br.readLine();
+                out.writeUTF(clientNachricht);
+                out.flush();
+                serverNachricht = in.readUTF();
+                System.out.println(serverNachricht);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            else {
-                System.out.println("Falsche IP Adresse");
-            }
-
-        } catch (IOException e) {
+        }
+        try {
+            in.close();
+            out.close();
+            socket.close();
+        } catch (IOException e){
             e.printStackTrace();
         }
     }
 }
+

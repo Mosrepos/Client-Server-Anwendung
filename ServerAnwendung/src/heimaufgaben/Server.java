@@ -11,61 +11,117 @@ public class Server {
     ServerSocket serverSocket;
     DataInputStream in = null;
     DataOutputStream out = null;
-
-    public Server(int port) {
+    int port = 2022;
+    public Server() {
         try {
             serverSocket = new ServerSocket(port);
-            System.out.println("Server wurde gestartet:\n geben Sie die Port Nummer ein:");
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+
+    }
+    public void startServer(){
+        try {
+            System.out.println("Server wurde gestartet:\ngeben Sie die Port Nummer ein:");
 
             Scanner sc = new Scanner(System.in);
             String Port = sc.nextLine();
 
             if (Integer.parseInt(Port)!=port){
-                System.out.println("KEIN KORREKTER PORT \n Aktuell ist nur der Port 2022 möglich");
+                System.out.println("KEIN KORREKTER PORT \nAktuell ist nur der Port 2022 möglich");
             }
             else {
                 System.out.println("Eingabe ist richtig"); //wenn port richtig eingegeben ist
                 clientSocket = serverSocket.accept();
-                System.out.println("client ist verbunden...");
+                System.out.println("client gibt IP-Adresse und Port Nummer ein..");
 
-                in = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
-                out = new DataOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
 
-                BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                //String verbunden = in.readUTF();
+                //System.out.println(verbunden);
                 String serverNachricht,clientNachricht = "";
+                LinkedList<String> verlauf = new LinkedList<>();
 
                 // reads message from client until "Done" is sent
                 while (!clientNachricht.equals("Fertig")) {
+                    in = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
+                    out = new DataOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
+
+
+
                     try {
                         clientNachricht = in.readUTF();
-                        //System.out.println("Anfrage vom Client:\n"+clientNachricht);
-                        String time = LocalTime.now().toString();
-                        String date = LocalDate.now().toString();
+
+                        verlauf.add(clientNachricht);
                         switch (clientNachricht) {
                             case "PING" -> {
                                 System.out.println("PONG");
-                                serverNachricht  = "PONG";
+                                serverNachricht = "PONG";
+                                out.writeUTF(serverNachricht);
+                                out.flush();
                             }
-                            //case "ECHO": ;
-                            case "CURRENT TIME" -> {
-                                System.out.println("TIME " + time);
-                                serverNachricht  = time;
-                                //out.writeUTF(time);
-                            }
-                            case "CURRENT DATE" -> {
-                                System.out.println("DATE " + date);
-                                serverNachricht  = date;
-                                //out.writeUTF(date);
-                            }
-                            //case "HISTORY" :;
-                            default -> serverNachricht = "BAD REQUEST";
-                        }
-                        //serverNachricht = br.readLine();
-                        out.writeUTF(serverNachricht);
-                        out.flush();
 
+                            case "CURRENT TIME" -> {
+                                String time = LocalTime.now().toString();
+                                System.out.println("TIME " + time);
+                                serverNachricht = time;
+                                out.writeUTF(serverNachricht);
+                                out.flush();
+                            }
+
+
+                            case "CURRENT DATE" -> {
+                                String date = LocalDate.now().toString();
+                                System.out.println("DATE " + date);
+                                serverNachricht = date;
+                                out.writeUTF(serverNachricht);
+                                out.flush();
+                            }
+
+
+                            case "Fertig" -> {
+                                serverNachricht = "Verbindung wird geschlossen!";
+                                out.writeUTF(serverNachricht);
+                                out.flush();
+                            }
+                            case "HISTORY" -> {
+                                serverNachricht = "";
+                                System.out.println("HISTORY");
+                                //if()
+                                for (String i : verlauf){
+                                    serverNachricht = serverNachricht + i +"\n";
+
+                                }
+                                out.writeUTF(serverNachricht);
+                                out.flush();
+                            }
+                            default -> {
+                                if (clientNachricht.startsWith("ECHO")){
+                                    System.out.println(clientNachricht);
+                                    serverNachricht = clientNachricht.substring(5);
+                                    out.writeUTF(serverNachricht);
+                                    out.flush();
+                                }
+                                else if (clientNachricht.startsWith("HISTORY")){
+                                    serverNachricht = "";
+                                    System.out.println("HISTORY");
+                                    int numberOfRequests = Integer.parseInt(clientNachricht.substring(8));
+                                    for (int i = verlauf.size()-numberOfRequests-1; i<verlauf.size()-1; i++){
+                                        serverNachricht = serverNachricht + verlauf.get(i) +"\n";
+                                    }
+                                    out.writeUTF(serverNachricht);
+                                    out.flush();
+                                }
+                                else {
+                                    serverNachricht = "BAD REQUEST";
+                                    out.writeUTF(serverNachricht);
+                                    out.flush();
+                                }
+                            }
+
+                        }
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        //throw new RuntimeException(e);
+                        System.out.println("Kein Client verbunden");
                     }
                 }
                 System.out.println("Verbindung geschlossen");

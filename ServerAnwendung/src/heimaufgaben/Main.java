@@ -4,7 +4,8 @@ import java.net.*;
 public class Main {
     public static void main(String[] args) {
 
-        Server server = new Server(2022);
+        Server server = new Server();
+        server.startServer();
         System.out.println("Der Server wurde beendet.");
     }
 }
