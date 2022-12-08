@@ -21,8 +21,6 @@ public class Client {
 
 
         String serverNachricht,clientNachricht = "";
-        String verbunden = "Client ist verbunden..";
-
 
         try {
             in = new DataInputStream(socket.getInputStream());

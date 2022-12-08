@@ -36,8 +36,6 @@ public class Server {
                 System.out.println("client gibt IP-Adresse und Port Nummer ein..");
 
 
-                //String verbunden = in.readUTF();
-                //System.out.println(verbunden);
                 String serverNachricht,clientNachricht = "";
                 LinkedList<String> verlauf = new LinkedList<>();
 
@@ -86,10 +84,15 @@ public class Server {
                             case "HISTORY" -> {
                                 serverNachricht = "";
                                 System.out.println("HISTORY");
-                                //if()
-                                for (String i : verlauf){
-                                    serverNachricht = serverNachricht + i +"\n";
+                                if(verlauf.size() == 1){
+                                    System.out.println("ERROR 404 NOT FOUND");
+                                    serverNachricht = "404 NOT FOUND";
+                                }
+                                else {
+                                    for (String i : verlauf){
+                                        serverNachricht = serverNachricht + i +"\n";
 
+                                    }
                                 }
                                 out.writeUTF(serverNachricht);
                                 out.flush();
@@ -104,9 +107,15 @@ public class Server {
                                 else if (clientNachricht.startsWith("HISTORY")){
                                     serverNachricht = "";
                                     System.out.println("HISTORY");
-                                    int numberOfRequests = Integer.parseInt(clientNachricht.substring(8));
-                                    for (int i = verlauf.size()-numberOfRequests-1; i<verlauf.size()-1; i++){
-                                        serverNachricht = serverNachricht + verlauf.get(i) +"\n";
+                                    if(verlauf.size() == 1){
+                                        System.out.println("ERROR 404 NOT FOUND");
+                                        serverNachricht = "404 NOT FOUND";
+                                    }
+                                    else {
+                                        int numberOfRequests = Integer.parseInt(clientNachricht.substring(8));
+                                        for (int i = verlauf.size()-numberOfRequests-1; i<verlauf.size()-1; i++){
+                                            serverNachricht = serverNachricht + verlauf.get(i) +"\n";
+                                        }
                                     }
                                     out.writeUTF(serverNachricht);
                                     out.flush();
