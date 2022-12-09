@@ -128,6 +128,45 @@ public class Server {
                                     int year = Integer.parseInt(clientNachricht.substring(9));
 
                                     //TODO api Feiertage
+                                } else if (clientNachricht.startsWith("GET")) {
+                                    String[] url = clientNachricht.split(" ");
+                                    if (url.length != 3) {
+                                        System.out.println("ERROR 400 BAD REQUEST");
+                                        serverNachricht = "400 BAD REQUEST";
+                                        out.writeUTF(serverNachricht);
+                                        out.flush();
+                                    } else {
+                                        String host = url[1];
+
+                                        System.out.println(host);
+                                        String request = url[2];
+
+                                        System.out.println(request);
+                                        Socket webSocket = new Socket(host, 80);
+                                        System.out.println("socket connected");
+
+                                        BufferedReader webIn2 = new BufferedReader(new InputStreamReader(webSocket.getInputStream(), "utf-8"), 8192);
+                                        BufferedWriter webOut2 = new BufferedWriter(new OutputStreamWriter(webSocket.getOutputStream(), "utf-8"), 8192);
+
+
+                                        webOut2.write("GET " + request + " HTTP/1.1\n");
+                                        webOut2.flush();
+                                        webOut2.write("Host: " + host + "\n");
+                                        webOut2.flush();
+                                        webOut2.write("Connection: close\n");
+                                        webOut2.flush();
+                                        webOut2.write("\n");
+                                        webOut2.flush();
+
+
+                                        while ((serverNachricht = webIn2.readLine()) != null) {
+
+                                            System.out.println(serverNachricht);
+                                            out.writeUTF(serverNachricht);
+                                            out.flush();
+                                        }
+                                        System.out.println("Antwort zu Ende");
+                                    }
                                 } else {
                                     System.out.println("ERROR 400 BAD REQUEST");
                                     serverNachricht = "400 BAD REQUEST";
@@ -140,6 +179,8 @@ public class Server {
                     } catch (IOException e) {
                         //throw new RuntimeException(e);
                         System.out.println("Kein Client verbunden");
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
                     }
                 }
                 System.out.println("Verbindung geschlossen");

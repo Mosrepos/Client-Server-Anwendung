@@ -28,8 +28,10 @@ public class Client {
                 clientNachricht = br.readLine();
                 out.writeUTF(clientNachricht);
                 out.flush();
-                serverNachricht = in.readUTF();
-                System.out.println(serverNachricht);
+                while (!(serverNachricht = in.readUTF()).equals("Antwort zu Ende")) {
+                    System.out.println(serverNachricht);
+                }
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
