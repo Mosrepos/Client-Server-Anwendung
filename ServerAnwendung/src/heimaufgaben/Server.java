@@ -3,6 +3,7 @@ package heimaufgaben;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.LinkedList;
@@ -40,22 +41,26 @@ public class Server {
                 String serverNachricht,clientNachricht = "";
                 LinkedList<String> verlauf = new LinkedList<>();
 
-                // reads message from client until "Done" is sent
+                // reads message from client until "EXIT" is sent
                 while (!clientNachricht.equals("EXIT")) {
                     in = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
                     out = new DataOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
 
 
+
                     try {
                         clientNachricht = in.readUTF();
 
+
                         verlauf.add(clientNachricht);
+
                         switch (clientNachricht) {
                             case "PING" -> {
                                 System.out.println("PONG");
                                 serverNachricht = "PONG";
                                 out.writeUTF(serverNachricht);
                                 out.flush();
+                                System.out.println("antwort ist zu ende");
                             }
 
                             case "CURRENT TIME" -> {
@@ -64,6 +69,7 @@ public class Server {
                                 serverNachricht = time;
                                 out.writeUTF(serverNachricht);
                                 out.flush();
+                                System.out.println("antwort ist zu ende");
                             }
 
 
@@ -73,6 +79,7 @@ public class Server {
                                 serverNachricht = date;
                                 out.writeUTF(serverNachricht);
                                 out.flush();
+                                System.out.println("antwort ist zu ende");
                             }
 
 
@@ -80,6 +87,7 @@ public class Server {
                                 serverNachricht = "Verbindung wird geschlossen!";
                                 out.writeUTF(serverNachricht);
                                 out.flush();
+                                System.out.println("antwort ist zu ende");
                             }
 
                             case "HISTORY" -> {
@@ -89,16 +97,16 @@ public class Server {
                                     System.out.println("ERROR 404 NOT FOUND");
                                     serverNachricht = "404 NOT FOUND";
                                 } else {
-                                    //StringBuilder serverNachrichtBuilder = new StringBuilder(serverNachricht);
+
                                     for (int i = 0; i < verlauf.size() - 1; i++) {
-                                        //serverNachrichtBuilder.append(i).append("\n");
+
                                         serverNachricht = serverNachricht + "\n" + verlauf.get(i);
 
                                     }
-                                    //serverNachricht = serverNachrichtBuilder.toString();
                                 }
                                 out.writeUTF(serverNachricht);
                                 out.flush();
+                                System.out.println("antwort ist zu ende");
                             }
                             case "LATEST NEWS" -> {
 
@@ -118,12 +126,14 @@ public class Server {
                                         serverNachricht = "404 NOT FOUND";
                                     } else {
                                         int numberOfRequests = Integer.parseInt(clientNachricht.substring(8));
+
                                         for (int i = verlauf.size() - numberOfRequests - 1; i < verlauf.size() - 1; i++) {
                                             serverNachricht = serverNachricht + "\n" + verlauf.get(i);
                                         }
                                     }
                                     out.writeUTF(serverNachricht);
                                     out.flush();
+                                    System.out.println("antwort ist zu ende");
                                 } else if (clientNachricht.startsWith("HOLIDAYS")) {
                                     int year = Integer.parseInt(clientNachricht.substring(9));
 
@@ -145,27 +155,27 @@ public class Server {
                                         Socket webSocket = new Socket(host, 80);
                                         System.out.println("socket connected");
 
-                                        BufferedReader webIn2 = new BufferedReader(new InputStreamReader(webSocket.getInputStream(), "utf-8"), 8192);
-                                        BufferedWriter webOut2 = new BufferedWriter(new OutputStreamWriter(webSocket.getOutputStream(), "utf-8"), 8192);
+                                        BufferedReader webIn = new BufferedReader(new InputStreamReader(webSocket.getInputStream(), StandardCharsets.UTF_8), 8192);
+                                        BufferedWriter webOut = new BufferedWriter(new OutputStreamWriter(webSocket.getOutputStream(), StandardCharsets.UTF_8), 8192);
 
 
-                                        webOut2.write("GET " + request + " HTTP/1.1\n");
-                                        webOut2.flush();
-                                        webOut2.write("Host: " + host + "\n");
-                                        webOut2.flush();
-                                        webOut2.write("Connection: close\n");
-                                        webOut2.flush();
-                                        webOut2.write("\n");
-                                        webOut2.flush();
+                                        webOut.write("GET " + request + " HTTP/1.1\n");
+                                        //webOut.flush();
+                                        webOut.write("Host: " + host + "\n");
+                                        //webOut.flush();
+                                        webOut.write("Connection: close\n");
+                                        //webOut.flush();
+                                        webOut.write("\n");
+                                        webOut.flush();
 
 
-                                        while ((serverNachricht = webIn2.readLine()) != null) {
+                                        while ((serverNachricht = webIn.readLine()) != null) {
 
                                             System.out.println(serverNachricht);
                                             out.writeUTF(serverNachricht);
                                             out.flush();
                                         }
-                                        System.out.println("Antwort zu Ende");
+                                        System.out.println("antwort ist zu ende");
                                     }
                                 } else {
                                     System.out.println("ERROR 400 BAD REQUEST");
@@ -177,7 +187,6 @@ public class Server {
 
                         }
                     } catch (IOException e) {
-                        //throw new RuntimeException(e);
                         System.out.println("Kein Client verbunden");
                     } catch (Exception e) {
                         throw new RuntimeException(e);

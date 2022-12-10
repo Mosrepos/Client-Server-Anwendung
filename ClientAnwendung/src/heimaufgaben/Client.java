@@ -2,6 +2,7 @@ package heimaufgaben;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Objects;
 
 public class Client {
     Socket socket = null;
@@ -10,6 +11,7 @@ public class Client {
     int port = 2022;
     //TODO ip adresse 127.0.0.1
     String address = "localhost";
+
     public Client() {
         try {
             socket = new Socket(address, port);
@@ -20,18 +22,25 @@ public class Client {
     public void startClient(){
         String serverNachricht,clientNachricht = "";
 
-        while (!clientNachricht.equals("EXIT")) {
+        while (!Objects.equals(clientNachricht, "EXIT")) {
             try {
-                in = new DataInputStream(socket.getInputStream());
-                out = new DataOutputStream(socket.getOutputStream());
-                BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-                clientNachricht = br.readLine();
-                out.writeUTF(clientNachricht);
-                out.flush();
-                while (!(serverNachricht = in.readUTF()).equals("Antwort zu Ende")) {
-                    System.out.println(serverNachricht);
-                }
 
+                in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+                out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+                BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+                while ((clientNachricht = br.readLine()) != null) {
+                    if (clientNachricht.startsWith("GET")) {
+                        while (!(serverNachricht = in.readUTF()).equals("antwort ist zu ende")) {
+                            System.out.println(serverNachricht);
+                        }
+                    } else {
+                        out.writeUTF(clientNachricht);
+                        out.flush();
+                        serverNachricht = in.readUTF();
+                        System.out.println(serverNachricht);
+                    }
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
