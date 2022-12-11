@@ -14,12 +14,11 @@ public class Main {
         String IP = sc.nextLine();
 
         if (Objects.equals(IP, "127.0.0.1") || Objects.equals(IP, "localhost")){
-            //System.out.println("Eingabe ist richtig");
+
             System.out.println("geben Sie die Port Nummer ein:");
             String Port = sc.nextLine();
             if (Integer.parseInt(Port)==2022) {
 
-                //System.out.println("Eingabe ist richtig\nSie können jetzt ihre Anfragen an den Server schicken..");
                 if (client.socket == null) {
                     System.out.println("Fehler beim Verbindungsaufbau\nDer Server wurde nicht gestartet");
                 }
@@ -34,7 +33,7 @@ public class Main {
             }
         }
         else {
-            System.out.println("Falsche IP Adresse!\nAktuell ist nur die Eingabe localhost möglich");
+            System.out.println("Falsche IP Adresse!\nAktuell sind nur die Eingabe localhost oder die IPv4-Adresse 127.0.0.1 möglich");
         }
         System.out.println("Der Client wurde beendet.");
     }

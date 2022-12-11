@@ -29,30 +29,19 @@ public class Client {
 
                 while ((clientNachricht = br.readLine()) != null) {
 
-                    if (clientNachricht.startsWith("GET")) {
-                        out.writeUTF(clientNachricht);
-                        out.flush();
-                        while (!(serverNachricht = in.readUTF()).equals("ende")) {
-                            System.out.println(serverNachricht);
-                        }
-                    } else {
-                        out.writeUTF(clientNachricht);
-                        out.flush();
-                        serverNachricht = in.readUTF();
+                    out.writeUTF(clientNachricht);
+                    out.flush();
+                    while (!(serverNachricht = in.readUTF()).equals("ende")) {
                         System.out.println(serverNachricht);
                     }
                 }
+
+                socket.close();
+                in.close();
+                out.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        try {
-            in.close();
-            out.close();
-            socket.close();
-        } catch (IOException e){
-            e.printStackTrace();
-        }
     }
 }
-
