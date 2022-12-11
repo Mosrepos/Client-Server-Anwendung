@@ -9,7 +9,6 @@ public class Client {
     DataInputStream in = null;
     DataOutputStream out = null;
     int port = 2022;
-    //TODO ip adresse 127.0.0.1
     String address = "localhost";
 
     public Client() {
@@ -30,10 +29,14 @@ public class Client {
                 BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
                 while ((clientNachricht = br.readLine()) != null) {
+
                     if (clientNachricht.startsWith("GET")) {
-                        while (!(serverNachricht = in.readUTF()).equals("antwort ist zu ende")) {
+                        out.writeUTF(clientNachricht);
+                        out.flush();
+                        while (!(serverNachricht = in.readUTF()).equals("ende")) {
                             System.out.println(serverNachricht);
                         }
+                        System.out.println("angekommen");
                     } else {
                         out.writeUTF(clientNachricht);
                         out.flush();

@@ -22,6 +22,7 @@ public class Server {
             e.printStackTrace();
         }
     }
+
     public void startServer(){
         try {
             System.out.println("Server wurde gestartet:\ngeben Sie die Port Nummer ein:");
@@ -31,8 +32,7 @@ public class Server {
 
             if (Integer.parseInt(Port)!=port){
                 System.out.println("KEIN KORREKTER PORT \nAktuell ist nur der Port 2022 möglich");
-            }
-            else {
+            } else {
                 System.out.println("Eingabe ist richtig"); //wenn port richtig eingegeben ist
                 clientSocket = serverSocket.accept();
                 System.out.println("client gibt IP-Adresse und Port Nummer ein..");
@@ -47,7 +47,6 @@ public class Server {
                     out = new DataOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
 
 
-
                     try {
                         clientNachricht = in.readUTF();
 
@@ -57,37 +56,25 @@ public class Server {
                         switch (clientNachricht) {
                             case "PING" -> {
                                 System.out.println("PONG");
-                                serverNachricht = "PONG";
-                                out.writeUTF(serverNachricht);
-                                out.flush();
-                                System.out.println("antwort ist zu ende");
+                                sendMessageToClient("PONG", out);
                             }
 
                             case "CURRENT TIME" -> {
                                 String time = LocalTime.now().toString();
                                 System.out.println("TIME " + time);
-                                serverNachricht = time;
-                                out.writeUTF(serverNachricht);
-                                out.flush();
-                                System.out.println("antwort ist zu ende");
+                                sendMessageToClient(time, out);
                             }
 
 
                             case "CURRENT DATE" -> {
                                 String date = LocalDate.now().toString();
                                 System.out.println("DATE " + date);
-                                serverNachricht = date;
-                                out.writeUTF(serverNachricht);
-                                out.flush();
-                                System.out.println("antwort ist zu ende");
+                                sendMessageToClient(date, out);
                             }
 
 
                             case "EXIT" -> {
-                                serverNachricht = "Verbindung wird geschlossen!";
-                                out.writeUTF(serverNachricht);
-                                out.flush();
-                                System.out.println("antwort ist zu ende");
+                                sendMessageToClient("Verbindung wird geschlossen", out);
                             }
 
                             case "HISTORY" -> {
@@ -104,24 +91,22 @@ public class Server {
 
                                     }
                                 }
-                                out.writeUTF(serverNachricht);
-                                out.flush();
-                                System.out.println("antwort ist zu ende");
+                                sendMessageToClient(serverNachricht, out);
                             }
                             case "LATEST NEWS" -> {
 
                                 // TODO api letzte Nachrichten
                             }
                             default -> {
+
                                 if (clientNachricht.startsWith("ECHO")) {
                                     System.out.println(clientNachricht);
                                     serverNachricht = clientNachricht.substring(5);
-                                    out.writeUTF(serverNachricht);
-                                    out.flush();
+                                    sendMessageToClient(serverNachricht, out);
                                 } else if (clientNachricht.startsWith("HISTORY")) {
                                     serverNachricht = "";
                                     System.out.println("HISTORY");
-                                    if(verlauf.size() == 1){
+                                    if (verlauf.size() == 1) {
                                         System.out.println("ERROR 404 NOT FOUND");
                                         serverNachricht = "404 NOT FOUND";
                                     } else {
@@ -131,9 +116,7 @@ public class Server {
                                             serverNachricht = serverNachricht + "\n" + verlauf.get(i);
                                         }
                                     }
-                                    out.writeUTF(serverNachricht);
-                                    out.flush();
-                                    System.out.println("antwort ist zu ende");
+                                    sendMessageToClient(serverNachricht, out);
                                 } else if (clientNachricht.startsWith("HOLIDAYS")) {
                                     int year = Integer.parseInt(clientNachricht.substring(9));
 
@@ -143,8 +126,7 @@ public class Server {
                                     if (url.length != 3) {
                                         System.out.println("ERROR 400 BAD REQUEST");
                                         serverNachricht = "400 BAD REQUEST";
-                                        out.writeUTF(serverNachricht);
-                                        out.flush();
+                                        sendMessageToClient(serverNachricht, out);
                                     } else {
                                         String host = url[1];
 
@@ -160,11 +142,11 @@ public class Server {
 
 
                                         webOut.write("GET " + request + " HTTP/1.1\n");
-                                        //webOut.flush();
+                                        webOut.flush();
                                         webOut.write("Host: " + host + "\n");
-                                        //webOut.flush();
+                                        webOut.flush();
                                         webOut.write("Connection: close\n");
-                                        //webOut.flush();
+                                        webOut.flush();
                                         webOut.write("\n");
                                         webOut.flush();
 
@@ -172,16 +154,15 @@ public class Server {
                                         while ((serverNachricht = webIn.readLine()) != null) {
 
                                             System.out.println(serverNachricht);
-                                            out.writeUTF(serverNachricht);
-                                            out.flush();
+                                            sendMessageToClient(serverNachricht, out);
                                         }
-                                        System.out.println("antwort ist zu ende");
+
+                                        sendMessageToClient("ende", out);
                                     }
                                 } else {
                                     System.out.println("ERROR 400 BAD REQUEST");
                                     serverNachricht = "400 BAD REQUEST";
-                                    out.writeUTF(serverNachricht);
-                                    out.flush();
+                                    sendMessageToClient(serverNachricht, out);
                                 }
                             }
 
@@ -203,5 +184,16 @@ public class Server {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void sendMessageToClient(String serverMessage, DataOutputStream out) {
+        try {
+            out.writeUTF(serverMessage);
+            out.flush();
+        } catch (IOException e) {
+            System.out.println("Nachricht konnte nicht gesendet werden");
+            ;
+        }
+
     }
 }
