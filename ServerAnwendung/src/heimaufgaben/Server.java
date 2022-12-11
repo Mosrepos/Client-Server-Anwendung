@@ -3,7 +3,13 @@ package heimaufgaben;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -16,22 +22,23 @@ public class Server {
     DataInputStream in = null;
     DataOutputStream out = null;
     int port = 2022;
+
     public Server() {
         try {
             serverSocket = new ServerSocket(port);
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void startServer(){
+    public void startServer() {
         try {
             System.out.println("Server wurde gestartet:\ngeben Sie die Port Nummer ein:");
 
             Scanner sc = new Scanner(System.in);
             String Port = sc.nextLine();
 
-            if (Integer.parseInt(Port)!=port){
+            if (Integer.parseInt(Port) != port) {
                 System.out.println("KEIN KORREKTER PORT \nAktuell ist nur der Port 2022 möglich");
             } else {
                 System.out.println("Der Server wartet am Port 2022 auf anfragen vom Client."); //wenn port richtig eingegeben ist
@@ -39,12 +46,12 @@ public class Server {
                 System.out.println("client gibt IP-Adresse und Port Nummer ein..");
 
 
-                String serverNachricht,clientNachricht = "";
+                String serverNachricht, clientNachricht = "";
                 LinkedList<String> verlauf = new LinkedList<>();
 
                 // reads message from client until "EXIT" is sent
                 // TODO alle Kommentare auf Deutsch
-                while (!clientNachricht.equals("EXIT")) {
+                while (!(clientNachricht.equals("EXIT"))) {
                     in = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
                     out = new DataOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
 
@@ -77,14 +84,12 @@ public class Server {
                             }
 
 
-                            case "EXIT" -> {
-                                sendMessageToClient("Verbindung wird geschlossen", out);
-                            }
+                            case "EXIT" -> sendMessageToClient("Verbindung wird geschlossen", out);
 
                             case "HISTORY" -> {
                                 System.out.println("HISTORY");
                                 if (verlauf.size() == 1) {
-                                    sendMessageToClient(printExepception(404), out);
+                                    sendMessageToClient(printException(404), out);
                                 } else {
                                     serverNachricht = "";
                                     for (int i = 0; i < verlauf.size() - 1; i++) {
@@ -94,8 +99,8 @@ public class Server {
                                 }
                             }
                             case "LATEST NEWS" -> {
-
-                                // TODO api letzte Nachrichten
+                                String[] url = {"GET", "tagesschau.de", "/api2/"};
+                                connectToWebUsingAPI(url, out);
                             }
                             default -> {
 
@@ -118,54 +123,25 @@ public class Server {
                                     }
                                     sendMessageToClient(serverNachricht, out);
                                 } else if (clientNachricht.startsWith("HOLIDAYS")) {
-                                    int year = Integer.parseInt(clientNachricht.substring(9));
-
-                                    //TODO api Feiertage
+                                    String year = clientNachricht.substring(9);
+                                    String[] url = {"GET", "feiertage-api.de", "/api/?jahr=" + year + "&nur_land=NW"};
+                                    connectToWebUsingAPI(url, out);
                                 } else if (clientNachricht.startsWith("GET")) {
                                     String[] url = clientNachricht.split(" ");
                                     if (url.length != 3) {
-                                        sendMessageToClient(printExepception(400), out);
+                                        sendMessageToClient(printException(400), out);
                                         sendMessageToClient("ende", out);
                                     } else {
-                                        String host = url[1];
-
-                                        System.out.println(host);
-                                        String request = url[2];
-
-                                        System.out.println(request);
-                                        Socket webSocket = new Socket(host, 80);
-                                        System.out.println("socket connected");
-
-                                        BufferedReader webIn = new BufferedReader(new InputStreamReader(webSocket.getInputStream(), StandardCharsets.UTF_8), 8192);
-                                        BufferedWriter webOut = new BufferedWriter(new OutputStreamWriter(webSocket.getOutputStream(), StandardCharsets.UTF_8), 8192);
-
-
-                                        webOut.write("GET " + request + " HTTP/1.1\n");
-                                        webOut.flush();
-                                        webOut.write("Host: " + host + "\n");
-                                        webOut.flush();
-                                        webOut.write("Connection: close\n");
-                                        webOut.flush();
-                                        webOut.write("\n");
-                                        webOut.flush();
-
-
-                                        while ((serverNachricht = webIn.readLine()) != null) {
-
-                                            System.out.println(serverNachricht);
-                                            sendMessageToClient(serverNachricht, out);
-                                        }
-
-                                        sendMessageToClient("ende", out);
+                                        connectToWeb(url, out, "1.1");
                                     }
                                 } else {
-                                    sendMessageToClient(printExepception(400), out);
+                                    sendMessageToClient(printException(400), out);
                                 }
                             }
 
                         }
                     } catch (IOException e) {
-                        printExepception(500);
+                        printException(500);
                     }
                 }
                 System.out.println("Verbindung geschlossen");
@@ -186,17 +162,17 @@ public class Server {
             out.writeUTF(serverMessage);
             out.flush();
         } catch (IOException e) {
+            e.printStackTrace();
             System.out.println("Nachricht konnte nicht gesendet werden");
-            ;
         }
 
     }
 
-    public String printExepception(int number) {
+    public String printException(int number) {
         switch (number) {
             case 400 -> {
                 System.out.println("ERROR 400 BAD REQUEST");
-                return "400 NOT FOUND";
+                return "400 BAD REQUEST";
             }
             case 404 -> {
                 System.out.println("ERROR 404 NOT FOUND");
@@ -210,6 +186,78 @@ public class Server {
                 System.out.println("unbekannter Fehler");
                 return "unbekannter Fehler";
             }
+        }
+    }
+
+    public void connectToWeb(String[] url, DataOutputStream out, String httpVersion) {
+        String host = url[1];
+        String request = url[2];
+
+        try {
+            Socket webSocket = new Socket(host, 80);
+
+            switch (httpVersion) {
+                case "1.1" -> {
+                    BufferedReader webIn = new BufferedReader(new InputStreamReader(webSocket.getInputStream(), StandardCharsets.UTF_8), 8192);
+                    BufferedWriter webOut = new BufferedWriter(new OutputStreamWriter(webSocket.getOutputStream(), StandardCharsets.UTF_8), 8192);
+                    doHttpProtocol(webIn, webOut, host, request, httpVersion, out);
+                    webIn.close();
+                    webOut.close();
+                }
+                case "2.0" -> {
+                    BufferedReader webIn = new BufferedReader(new InputStreamReader(webSocket.getInputStream(), StandardCharsets.UTF_8));
+                    BufferedWriter webOut = new BufferedWriter(new OutputStreamWriter(webSocket.getOutputStream(), StandardCharsets.UTF_8));
+                    doHttpProtocol(webIn, webOut, host, request, httpVersion, out);
+                    webIn.close();
+                    webOut.close();
+                }
+            }
+            webSocket.close();
+        } catch (IOException e) {
+            sendMessageToClient(printException(500), out);
+        }
+
+    }
+
+    public void doHttpProtocol(BufferedReader webIn, BufferedWriter webOut, String host, String request, String httpVersion, DataOutputStream out) {
+
+        String serverNachricht;
+        try {
+            webOut.write("GET " + request + " HTTP/" + httpVersion + "\n");
+            webOut.flush();
+            webOut.write("Host: " + host + "\n");
+            webOut.flush();
+            webOut.write("Connection: close\n");
+            webOut.flush();
+            webOut.write("\n");
+            webOut.flush();
+
+
+            while ((serverNachricht = webIn.readLine()) != null) {
+
+                System.out.println(serverNachricht);
+                sendMessageToClient(serverNachricht, out);
+            }
+        } catch (IOException e) {
+            printException(500);
+        }
+
+
+        sendMessageToClient("ende", out);
+    }
+
+    public void connectToWebUsingAPI(String[] url, DataOutputStream out) {
+        HttpClient client = HttpClient.newBuilder()
+                .version(Version.HTTP_2)
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .connectTimeout(Duration.ofSeconds(20))
+                .build();
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create("http://" + url[1] + url[2])).build();
+        try {
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            sendMessageToClient(response.body(), out);
+        } catch (InterruptedException | IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

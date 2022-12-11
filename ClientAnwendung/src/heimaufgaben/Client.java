@@ -2,7 +2,6 @@ package heimaufgaben;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.Objects;
 
 public class Client {
     Socket socket = null;
@@ -21,7 +20,7 @@ public class Client {
     public void startClient(){
         String serverNachricht,clientNachricht = "";
 
-        while (!Objects.equals(clientNachricht, "EXIT")) {
+        while (!(clientNachricht.equals("EXIT"))) {
             try {
 
                 in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
@@ -36,7 +35,6 @@ public class Client {
                         while (!(serverNachricht = in.readUTF()).equals("ende")) {
                             System.out.println(serverNachricht);
                         }
-                        System.out.println("angekommen");
                     } else {
                         out.writeUTF(clientNachricht);
                         out.flush();
