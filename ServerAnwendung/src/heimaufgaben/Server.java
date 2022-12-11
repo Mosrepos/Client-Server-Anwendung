@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.Scanner;
 
@@ -33,7 +34,7 @@ public class Server {
             if (Integer.parseInt(Port)!=port){
                 System.out.println("KEIN KORREKTER PORT \nAktuell ist nur der Port 2022 möglich");
             } else {
-                System.out.println("Eingabe ist richtig"); //wenn port richtig eingegeben ist
+                System.out.println("Der Server wartet am Port 2022 auf anfragen vom Client."); //wenn port richtig eingegeben ist
                 clientSocket = serverSocket.accept();
                 System.out.println("client gibt IP-Adresse und Port Nummer ein..");
 
@@ -42,6 +43,7 @@ public class Server {
                 LinkedList<String> verlauf = new LinkedList<>();
 
                 // reads message from client until "EXIT" is sent
+                // TODO alle Kommentare auf Deutsch
                 while (!clientNachricht.equals("EXIT")) {
                     in = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
                     out = new DataOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
@@ -60,16 +62,18 @@ public class Server {
                             }
 
                             case "CURRENT TIME" -> {
-                                String time = LocalTime.now().toString();
-                                System.out.println("TIME " + time);
-                                sendMessageToClient(time, out);
+                                DateTimeFormatter time = DateTimeFormatter.ofPattern("HH:mm:ss");
+                                LocalTime localTime = LocalTime.now();
+                                System.out.println("TIME " + time.format(localTime));
+                                sendMessageToClient(time.format(localTime), out);
                             }
 
 
                             case "CURRENT DATE" -> {
-                                String date = LocalDate.now().toString();
-                                System.out.println("DATE " + date);
-                                sendMessageToClient(date, out);
+                                DateTimeFormatter date = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+                                LocalDate localDate = LocalDate.now();
+                                System.out.println("DATE " + localDate.format(date));
+                                sendMessageToClient(localDate.format(date), out);
                             }
 
 
@@ -78,20 +82,16 @@ public class Server {
                             }
 
                             case "HISTORY" -> {
-                                serverNachricht = "";
                                 System.out.println("HISTORY");
-                                if(verlauf.size() == 1){
-                                    System.out.println("ERROR 404 NOT FOUND");
-                                    serverNachricht = "404 NOT FOUND";
+                                if (verlauf.size() == 1) {
+                                    sendMessageToClient(printExepception(404), out);
                                 } else {
-
+                                    serverNachricht = "";
                                     for (int i = 0; i < verlauf.size() - 1; i++) {
-
                                         serverNachricht = serverNachricht + "\n" + verlauf.get(i);
-
                                     }
+                                    sendMessageToClient(serverNachricht, out);
                                 }
-                                sendMessageToClient(serverNachricht, out);
                             }
                             case "LATEST NEWS" -> {
 
@@ -124,9 +124,8 @@ public class Server {
                                 } else if (clientNachricht.startsWith("GET")) {
                                     String[] url = clientNachricht.split(" ");
                                     if (url.length != 3) {
-                                        System.out.println("ERROR 400 BAD REQUEST");
-                                        serverNachricht = "400 BAD REQUEST";
-                                        sendMessageToClient(serverNachricht, out);
+                                        sendMessageToClient(printExepception(400), out);
+                                        sendMessageToClient("ende", out);
                                     } else {
                                         String host = url[1];
 
@@ -160,17 +159,13 @@ public class Server {
                                         sendMessageToClient("ende", out);
                                     }
                                 } else {
-                                    System.out.println("ERROR 400 BAD REQUEST");
-                                    serverNachricht = "400 BAD REQUEST";
-                                    sendMessageToClient(serverNachricht, out);
+                                    sendMessageToClient(printExepception(400), out);
                                 }
                             }
 
                         }
                     } catch (IOException e) {
-                        System.out.println("Kein Client verbunden");
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        printExepception(500);
                     }
                 }
                 System.out.println("Verbindung geschlossen");
@@ -182,7 +177,7 @@ public class Server {
             }
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("Server konnte nicht gestartet werden!");
         }
     }
 
@@ -195,5 +190,26 @@ public class Server {
             ;
         }
 
+    }
+
+    public String printExepception(int number) {
+        switch (number) {
+            case 400 -> {
+                System.out.println("ERROR 400 BAD REQUEST");
+                return "400 NOT FOUND";
+            }
+            case 404 -> {
+                System.out.println("ERROR 404 NOT FOUND");
+                return "404 NOT FOUND";
+            }
+            case 500 -> {
+                System.out.println("ERROR 500 INTERNAL SERVER ERROR");
+                return "500 INTERNAL SERVER ERROR";
+            }
+            default -> {
+                System.out.println("unbekannter Fehler");
+                return "unbekannter Fehler";
+            }
+        }
     }
 }
