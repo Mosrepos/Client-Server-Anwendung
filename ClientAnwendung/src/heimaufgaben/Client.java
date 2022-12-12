@@ -21,8 +21,9 @@ public class Client {
     public void startClient() {
         String serverNachricht, clientNachricht = "";
 
-        while (!(clientNachricht.equals("EXIT"))) {  /* Die While-Schleife wird durchgegangen, 
-                                                     bis der Input-String "EXIT" entspricht, erst dann wird die Verbindung zum Server damit abgeschlossen*/    
+        while (!(clientNachricht.equals("EXIT"))) {
+            /* Die While-Schleife wird durchgegangen,
+            bis der Input-String "EXIT" entspricht, erst dann wird die Verbindung zum Server damit abgeschlossen*/
             try {
 
                 in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));

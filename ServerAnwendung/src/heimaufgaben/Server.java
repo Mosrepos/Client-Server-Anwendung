@@ -18,19 +18,13 @@ import java.util.Scanner;
 
 public class Server {
     Socket clientSocket;
-    /* Socket repräsentiert einen Client, deren Konstruktur die Nummer desjenigen Ports (2022) 
-       und IP-Adresse (localhost) übergeben bekommt, an dem dieser horchen soll.
-     */
 
     ServerSocket serverSocket;
-    /*  ServerSocket repräsentiert einen Server, dessen Konstruktur die Nummer desjenigen     
-        Ports (2022) übergeben bekommt, an dem dieser horchen soll.
-    */
 
     DataInputStream in = null;
     //Damit werden Daten vom Client (an dem Server) angenommen.
 
-    DataOutputStream out = null
+    DataOutputStream out = null;
     // Damit werden Daten vom Server (an dem Client) geschickt.
 
     int port = 2022;
@@ -116,10 +110,13 @@ public class Server {
                             der Server mit allen bisher vom Client gestellte Anfragen */
                             case "HISTORY" -> {
                                 System.out.println("HISTORY");
-                                if (verlauf.size() == 1) {
+                                if (verlauf.size() == 1) { //falls History die erste Anfrage ist
                                     sendMessageToClient(printException(404), out);
                                 } else {
                                     serverNachricht = "";
+                                    /*
+                                    Die for Schleife speichert die Anfragen in dem String serverNachricht
+                                     */
                                     for (int i = 0; i < verlauf.size() - 1; i++) {
                                         serverNachricht = serverNachricht + "\n" + verlauf.get(i);
                                     }
@@ -137,16 +134,16 @@ public class Server {
 
                                 if (clientNachricht.startsWith("ECHO")) { // Falls das Wort "ECHO" am Anfang geschrieben wir 
                                     System.out.println(clientNachricht);
-                                    serverNachricht = clientNachricht.substring(5); // Das Wort "ECHO" und das Lehrzeichen werdn gelöscht 
+                                    serverNachricht = clientNachricht.substring(5); // Das Wort "ECHO" und das Leerzeichen werden gelöscht
                                     sendMessageToClient(serverNachricht, out); // Der Rest wird an dem Client zurückgeschickt
                                 } else if (clientNachricht.startsWith("HISTORY")) {
                                     serverNachricht = "";
-                                    int numberOfRequests = Integer.parseInt(clientNachricht.substring(8));
+                                    int numberOfRequests = Integer.parseInt(clientNachricht.substring(8)); //Die Zahl nach History wird als int gespeichert
                                     System.out.println("HISTORY");
-                                    if (verlauf.size() == 1) {
+                                    if (verlauf.size() == 1) { //falls History die erste Anfrage ist
                                         sendMessageToClient(printException(404), out);
                                     } else if (verlauf.size() <= numberOfRequests) { // Falls die Anzahl der Anfragen >= die Anzahl der gespeicherten Anfragen 
-                                        for (String anfrage : verlauf) {
+                                        for (String anfrage : verlauf) { //werden alle Anfragen ausgegeben
                                             serverNachricht = serverNachricht + "\n" + anfrage;
                                         }
 
@@ -157,10 +154,10 @@ public class Server {
                                     }
                                     sendMessageToClient(serverNachricht, out);
                                 } else if (clientNachricht.startsWith("HOLIDAYS")) {
-                                    String year = clientNachricht.substring(9);
+                                    String year = clientNachricht.substring(9); //wird in die url eingebaut
                                     try {
                                         int yearInt = Integer.parseInt(year);
-                                        if (yearInt < 0 || yearInt > 10000) {
+                                        if (yearInt < 0 || yearInt > 10000) { //valides Jahr?
                                             sendMessageToClient(printException(400), out);
                                         } else {
                                             String[] url = {"GET", "feiertage-api.de", "/api/?jahr=" + year + "&nur_land=NW"};
@@ -170,9 +167,9 @@ public class Server {
                                         sendMessageToClient(printException(400), out);
                                     }
 
-                                /* Falls die vom Client gesendete Anfrage zu keinem angebotenen Dienst
-                                passt, dann antwortet der Server mit Fehlermeldung "ERROR 400 BAD REQUEST" */
+
                                 } else if (clientNachricht.startsWith("GET")) {
+                                    //Porxy Verbindung
                                     String[] url = clientNachricht.split(" ");
                                     if (url.length != 3) {
                                         sendMessageToClient(printException(400), out);
@@ -181,6 +178,8 @@ public class Server {
                                         connectToWeb(url, out);
                                     }
                                 } else {
+                                    /* Falls die vom Client gesendete Anfrage zu keinem angebotenen Dienst
+                                passt, dann antwortet der Server mit Fehlermeldung "ERROR 400 BAD REQUEST." */
                                     sendMessageToClient(printException(400), out);
                                 }
                             }
@@ -193,8 +192,7 @@ public class Server {
                     sendMessageToClient("ende", out);
                 }
                 System.out.println("Verbindung geschlossen");
-                // close connection
-
+                // Verbindung schließen
                 serverSocket.close();
                 clientSocket.close();
                 in.close();
@@ -237,15 +235,18 @@ public class Server {
     }
 
     public void connectToWeb(String[] url, DataOutputStream out) {
+        // url[0] = "GET"
         String host = url[1];
         String request = url[2];
 
         try {
-            Socket webSocket = new Socket(host, 80);
+            Socket webSocket = new Socket(host, 80); //socket für die Kommunikation mit einem webserver
 
             BufferedReader webIn = new BufferedReader(new InputStreamReader(webSocket.getInputStream(), StandardCharsets.UTF_8));
             BufferedWriter webOut = new BufferedWriter(new OutputStreamWriter(webSocket.getOutputStream(), StandardCharsets.UTF_8));
             String serverNachricht;
+
+            //http1.1 Protokoll
             webOut.write("GET " + request + " HTTP/1.1\n");
             webOut.flush();
             webOut.write("Host: " + host + "\n");
@@ -258,9 +259,10 @@ public class Server {
 
             while ((serverNachricht = webIn.readLine()) != null) {
 
-                System.out.println(serverNachricht);
-                sendMessageToClient(serverNachricht, out);
+                System.out.println(serverNachricht); //Ausgabe der Nachricht beim Server
+                sendMessageToClient(serverNachricht, out); //Ausgabe der Nachricht beim Client
             }
+            //Nach der Ausgabe schließen wir die Verbindung
             webIn.close();
             webOut.close();
             webSocket.close();
