@@ -156,11 +156,11 @@ public class Server {
                             }
 
                         }
+                        sendMessageToClient("ende", out);
 
                     } catch (IOException e) {
                         printException(500);
                     }
-                    sendMessageToClient("ende", out);
                 }
                 System.out.println("Verbindung geschlossen");
                 // close connection

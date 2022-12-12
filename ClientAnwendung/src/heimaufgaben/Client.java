@@ -36,13 +36,16 @@ public class Client {
                         System.out.println(serverNachricht);
                     }
                 }
-
-                socket.close();
-                in.close();
-                out.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+        try {
+            socket.close();
+            in.close();
+            out.close();
+        } catch (Exception e) {
+            System.out.println("Socket konnte nicht geschlossen werden");
         }
     }
 }
