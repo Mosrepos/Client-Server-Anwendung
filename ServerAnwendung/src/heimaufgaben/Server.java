@@ -118,29 +118,28 @@ public class Server {
                                     if (verlauf.size() == 1) {
                                         sendMessageToClient(printException(404), out);
                                     } else if (verlauf.size() <= numberOfRequests) {
-                                        System.out.println("hallo");
                                         for (String anfrage : verlauf) {
-                                            System.out.println("hallo");
                                             serverNachricht = serverNachricht + "\n" + anfrage;
-                                            System.out.println("hallo");
                                         }
 
                                     } else {
                                         for (int zaehler = verlauf.size() - numberOfRequests - 1; zaehler < verlauf.size() - 1; zaehler++) {
-                                            System.out.println("lol");
                                             serverNachricht = serverNachricht + "\n" + verlauf.get(zaehler);
-                                            System.out.println("lol");
                                         }
                                     }
                                     sendMessageToClient(serverNachricht, out);
                                 } else if (clientNachricht.startsWith("HOLIDAYS")) {
                                     String year = clientNachricht.substring(9);
-                                    int yearInt = Integer.parseInt(year);
-                                    if (yearInt < 0 || yearInt > 10000) {
+                                    try {
+                                        int yearInt = Integer.parseInt(year);
+                                        if (yearInt < 0 || yearInt > 10000) {
+                                            sendMessageToClient(printException(400), out);
+                                        } else {
+                                            String[] url = {"GET", "feiertage-api.de", "/api/?jahr=" + year + "&nur_land=NW"};
+                                            connectToWebUsingAPI(url, out);
+                                        }
+                                    } catch (Exception e) {
                                         sendMessageToClient(printException(400), out);
-                                    } else {
-                                        String[] url = {"GET", "feiertage-api.de", "/api/?jahr=" + year + "&nur_land=NW"};
-                                        connectToWebUsingAPI(url, out);
                                     }
 
                                 } else if (clientNachricht.startsWith("GET")) {
@@ -184,7 +183,6 @@ public class Server {
             out.writeUTF(serverMessage);
             out.flush();
         } catch (IOException e) {
-            e.printStackTrace();
             System.out.println("Nachricht konnte nicht gesendet werden");
         }
     }
