@@ -49,12 +49,11 @@ public class Server {
                 String serverNachricht, clientNachricht = "";
                 LinkedList<String> verlauf = new LinkedList<>();
 
+                in = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
+                out = new DataOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
                 // reads message from client until "EXIT" is sent
                 // TODO alle Kommentare auf Deutsch
                 while (!(clientNachricht.equals("EXIT"))) {
-                    in = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
-                    out = new DataOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
-
 
                     try {
                         clientNachricht = in.readUTF();
@@ -86,7 +85,7 @@ public class Server {
 
                             case "EXIT" -> {
                                 sendMessageToClient("Verbindung wird geschlossen", out);
-                                sendMessageToClient("ende", out);
+                                sendMessageToClient("\nende", out);
                             }
 
                             case "HISTORY" -> {
@@ -147,7 +146,7 @@ public class Server {
                                     String[] url = clientNachricht.split(" ");
                                     if (url.length != 3) {
                                         sendMessageToClient(printException(400), out);
-                                        sendMessageToClient("ende", out);
+                                        sendMessageToClient("\nende", out);
                                     } else {
                                         connectToWeb(url, out);
                                     }
@@ -162,8 +161,7 @@ public class Server {
                     }
                 }
                 System.out.println("Verbindung geschlossen");
-
-                sendMessageToClient("ende", out);
+                sendMessageToClient("\nende", out);
                 // close connection
 
                 serverSocket.close();
