@@ -22,15 +22,16 @@ public class Client {
         String serverNachricht, clientNachricht = "";
 
         while (!(clientNachricht.equals("EXIT"))) {  /* Die While-Schleife wird durchgegangen, 
-                                                     bis der Input-String "EXIT" entspricht, erst dann wird die Verbindung zum Server damit abgeschlossen*/    
+                                                     bis der Input-String "EXIT" entspricht, erst dann wird die Verbindung 
+                                                     zum Server damit abgeschlossen*/    
             try {
 
-                in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-                out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-                BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));//Zuständig für die Eingabe 
+                out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));//Zuständig für die Übermittlung an  den Server
+                BufferedReader br = new BufferedReader(new InputStreamReader(System.in));//liest die Eingabe vom Client
 
-                while ((clientNachricht = br.readLine()) != null) {
-
+                while ((clientNachricht = br.readLine()) != null) { //wir lesen die Eingabe vom Client, solange Client verbunden ist
+ 
                     out.writeUTF(clientNachricht);
                     out.flush();
                     while (!(serverNachricht = in.readUTF()).equals("ende")) {
@@ -38,7 +39,7 @@ public class Client {
                     }
                 }
 
-                socket.close();
+                socket.close(); //Verbindung wird getrennt.
                 in.close();
                 out.close();
             } catch (IOException e) {
