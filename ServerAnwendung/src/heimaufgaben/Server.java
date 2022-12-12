@@ -49,15 +49,16 @@ public class Server {
                 String serverNachricht, clientNachricht = "";
                 LinkedList<String> verlauf = new LinkedList<>();
 
-                in = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
-                out = new DataOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
                 // reads message from client until "EXIT" is sent
                 // TODO alle Kommentare auf Deutsch
                 while (!(clientNachricht.equals("EXIT"))) {
 
-                    try {
-                        clientNachricht = in.readUTF();
 
+                    try {
+                        in = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
+                        out = new DataOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
+
+                        clientNachricht = in.readUTF();
 
                         verlauf.add(clientNachricht);
 
@@ -85,7 +86,7 @@ public class Server {
 
                             case "EXIT" -> {
                                 sendMessageToClient("Verbindung wird geschlossen", out);
-                                sendMessageToClient("\nende", out);
+                                sendMessageToClient("ende", out);
                             }
 
                             case "HISTORY" -> {
@@ -146,7 +147,7 @@ public class Server {
                                     String[] url = clientNachricht.split(" ");
                                     if (url.length != 3) {
                                         sendMessageToClient(printException(400), out);
-                                        sendMessageToClient("\nende", out);
+                                        sendMessageToClient("ende", out);
                                     } else {
                                         connectToWeb(url, out);
                                     }
@@ -156,12 +157,15 @@ public class Server {
                             }
 
                         }
+
                     } catch (IOException e) {
                         printException(500);
                     }
+                    sendMessageToClient("ende", out);
                 }
                 System.out.println("Verbindung geschlossen");
-                sendMessageToClient("\nende", out);
+
+                System.out.println("angekommen");
                 // close connection
 
                 serverSocket.close();
@@ -213,8 +217,8 @@ public class Server {
         try {
             Socket webSocket = new Socket(host, 80);
 
-            BufferedReader webIn = new BufferedReader(new InputStreamReader(webSocket.getInputStream(), StandardCharsets.UTF_8), 8192);
-            BufferedWriter webOut = new BufferedWriter(new OutputStreamWriter(webSocket.getOutputStream(), StandardCharsets.UTF_8), 8192);
+            BufferedReader webIn = new BufferedReader(new InputStreamReader(webSocket.getInputStream(), StandardCharsets.UTF_8));
+            BufferedWriter webOut = new BufferedWriter(new OutputStreamWriter(webSocket.getOutputStream(), StandardCharsets.UTF_8));
             String serverNachricht;
             webOut.write("GET " + request + " HTTP/1.1\n");
             webOut.flush();

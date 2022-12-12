@@ -13,12 +13,13 @@ public class Client {
     public Client() {
         try {
             socket = new Socket(address, port);
-        } catch (IOException e){
+        } catch (IOException e) {
             System.out.println("Es gibt ein Problem mit dem Socket");
         }
     }
-    public void startClient(){
-        String serverNachricht,clientNachricht = "";
+
+    public void startClient() {
+        String serverNachricht, clientNachricht = "";
 
         while (!(clientNachricht.equals("EXIT"))) {
             try {
