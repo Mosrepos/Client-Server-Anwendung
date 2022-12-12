@@ -18,9 +18,21 @@ import java.util.Scanner;
 
 public class Server {
     Socket clientSocket;
+    /* Socket repräsentiert einen Client, deren Konstruktur die Nummer desjenigen Ports (2022) 
+       und IP-Adresse (localhost) übergeben bekommt, an dem dieser horchen soll.
+     */
+
     ServerSocket serverSocket;
+    /*  ServerSocket repräsentiert einen Server, dessen Konstruktur die Nummer desjenigen     
+        Ports (2022) übergeben bekommt, an dem dieser horchen soll.
+    */
+
     DataInputStream in = null;
-    DataOutputStream out = null;
+    //Damit werden Daten vom Client (an dem Server) angenommen.
+
+    DataOutputStream out = null
+    // Damit werden Daten vom Server (an dem Client) geschickt.
+
     int port = 2022;
 
     public Server() {
@@ -35,9 +47,10 @@ public class Server {
         try {
             System.out.println("Server wurde gestartet:\ngeben Sie die Port Nummer ein:");
 
-            Scanner sc = new Scanner(System.in);
+            Scanner sc = new Scanner(System.in); // Scanner definieren, um Eingaben zu schreiben
             String Port = sc.nextLine();
-
+            
+            // Falls Port nicht richtig eingegeben wird, dann folgendes schreiben
             if (Integer.parseInt(Port) != port) {
                 System.out.println("KEIN KORREKTER PORT \nAktuell ist nur der Port 2022 möglich");
             } else {
@@ -49,8 +62,9 @@ public class Server {
                 String serverNachricht, clientNachricht = "";
                 LinkedList<String> verlauf = new LinkedList<>();
 
-                // reads message from client until "EXIT" is sent
-                // TODO alle Kommentare auf Deutsch
+                /* Falls das Wort "EXIT" vom Client geschrieben wird, dann Verbindung enden und 
+                   "Verbindung geschlossen" schreiben.
+                */
                 while (!(clientNachricht.equals("EXIT"))) {
 
 
@@ -63,11 +77,16 @@ public class Server {
                         verlauf.add(clientNachricht);
 
                         switch (clientNachricht) {
+
+                            /* Für den Fall, dass Client nach dem Wort "PING" anfragt, 
+                            antwortet der Server mit "PONG" */
                             case "PING" -> {
                                 System.out.println("PONG");
                                 sendMessageToClient("PONG", out);
                             }
 
+                            /* Für den Fall, dass Client nach der Zeit fragt, 
+                            gibt der Server die aktuelle Zeit zurück. */
                             case "CURRENT TIME" -> {
                                 DateTimeFormatter time = DateTimeFormatter.ofPattern("HH:mm:ss");
                                 LocalTime localTime = LocalTime.now();
@@ -76,6 +95,8 @@ public class Server {
                             }
 
 
+                            /* Für den Fall, dass Client nach dem Datum fragt,
+                            gibt der Server das aktuelle Datum zurück. */
                             case "CURRENT DATE" -> {
                                 DateTimeFormatter date = DateTimeFormatter.ofPattern("dd.MM.yyyy");
                                 LocalDate localDate = LocalDate.now();
@@ -84,11 +105,14 @@ public class Server {
                             }
 
 
+                            /* Für den Fall, dass Client das Wort "EXIT" schreibt,
+                            schließt die Verbindung. */
                             case "EXIT" -> {
                                 sendMessageToClient("Verbindung wird geschlossen", out);
                                 sendMessageToClient("ende", out);
                             }
 
+                            /* Für den Fall, dass Client das Wort "HISTORY"  */
                             case "HISTORY" -> {
                                 System.out.println("HISTORY");
                                 if (verlauf.size() == 1) {
@@ -156,11 +180,11 @@ public class Server {
                             }
 
                         }
-                        sendMessageToClient("ende", out);
 
                     } catch (IOException e) {
                         printException(500);
                     }
+                    sendMessageToClient("ende", out);
                 }
                 System.out.println("Verbindung geschlossen");
                 // close connection
