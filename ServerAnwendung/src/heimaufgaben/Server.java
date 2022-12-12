@@ -138,14 +138,14 @@ public class Server {
                                 if (clientNachricht.startsWith("ECHO")) { // Falls das Wort "ECHO" am Anfang geschrieben wir 
                                     System.out.println(clientNachricht);
                                     serverNachricht = clientNachricht.substring(5); // Das Wort "ECHO" und das Lehrzeichen werdn gelöscht 
-                                    sendMessageToClient(serverNachricht, out);
+                                    sendMessageToClient(serverNachricht, out); // Der Rest wird an dem Client zurückgeschickt
                                 } else if (clientNachricht.startsWith("HISTORY")) {
                                     serverNachricht = "";
                                     int numberOfRequests = Integer.parseInt(clientNachricht.substring(8));
                                     System.out.println("HISTORY");
                                     if (verlauf.size() == 1) {
                                         sendMessageToClient(printException(404), out);
-                                    } else if (verlauf.size() <= numberOfRequests) {
+                                    } else if (verlauf.size() <= numberOfRequests) { // Falls die Anzahl der Anfragen >= die Anzahl der gespeicherten Anfragen 
                                         for (String anfrage : verlauf) {
                                             serverNachricht = serverNachricht + "\n" + anfrage;
                                         }
@@ -170,6 +170,8 @@ public class Server {
                                         sendMessageToClient(printException(400), out);
                                     }
 
+                                /* Falls die vom Client gesendete Anfrage zu keinem angebotenen Dienst
+                                passt, dann antwortet der Server mit Fehlermeldung "ERROR 400 BAD REQUEST" */
                                 } else if (clientNachricht.startsWith("GET")) {
                                     String[] url = clientNachricht.split(" ");
                                     if (url.length != 3) {
