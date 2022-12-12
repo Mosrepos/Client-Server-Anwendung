@@ -112,7 +112,8 @@ public class Server {
                                 sendMessageToClient("ende", out);
                             }
 
-                            /* Für den Fall, dass Client das Wort "HISTORY"  */
+                            /* Für den Fall, dass Client das Wort "HISTORY" schreibt, antwortet
+                            der Server mit allen bisher vom Client gestellte Anfragen */
                             case "HISTORY" -> {
                                 System.out.println("HISTORY");
                                 if (verlauf.size() == 1) {
@@ -129,11 +130,14 @@ public class Server {
                                 String[] url = {"GET", "tagesschau.de", "/api2/"};
                                 connectToWebUsingAPI(url, out);
                             }
+
+                            /* Falls die vorherigen Dienste nicht angetroffen werden, überprüfen wir
+                            dann zuerst das erste Wort von der Anfrage */
                             default -> {
 
-                                if (clientNachricht.startsWith("ECHO")) {
+                                if (clientNachricht.startsWith("ECHO")) { // Falls das Wort "ECHO" am Anfang geschrieben wir 
                                     System.out.println(clientNachricht);
-                                    serverNachricht = clientNachricht.substring(5);
+                                    serverNachricht = clientNachricht.substring(5); // Das Wort "ECHO" und das Lehrzeichen werdn gelöscht 
                                     sendMessageToClient(serverNachricht, out);
                                 } else if (clientNachricht.startsWith("HISTORY")) {
                                     serverNachricht = "";
