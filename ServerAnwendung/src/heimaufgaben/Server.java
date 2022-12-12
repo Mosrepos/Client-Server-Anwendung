@@ -27,7 +27,7 @@ public class Server {
         try {
             serverSocket = new ServerSocket(port);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Es gibt ein Problem mit dem ServerSocket");
         }
     }
 
@@ -163,8 +163,6 @@ public class Server {
                     sendMessageToClient("ende", out);
                 }
                 System.out.println("Verbindung geschlossen");
-
-                System.out.println("angekommen");
                 // close connection
 
                 serverSocket.close();

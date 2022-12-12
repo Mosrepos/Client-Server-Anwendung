@@ -1,4 +1,96 @@
 Dokumentation
 =============
+In der zweiten Heimaufgabe müssen wir ein Programm zur Client/Server-Anwendung programmieren.
+Es gibt viele Befehle und unterschiedliche Fehlermeldungen, die wir unbedingt machen müssen.
+Die folgenden Bibliotheken dürften wir auf jeden benutzen:
+-> java.io.*            -> java.nio*             -> java.text.*
+-> java.lang.*          -> java.security.*
+-> java.net.*           -> java.util.*
+
+
+In der folgenden Tabelle sehen Sie die Eingaben/Anfragen und deren Ausgaben/Antwort.
+
+  Client                                        Server
+
+                                                * Port "2022" eingeben:
+                                                  -> Bei richtiger Eingabe("2022")
+                                                     Somit ist Server angemeldet und wartet
+                                                     auf Clients-Anfragen.
+                                                  -> Bei einer falschen Port-Eingabe:
+                                                     -> "KEIN KORREKTER PORT.
+                                                         Aktuell ist nur der Port 2022 möglich"
+                                                    <-
+                                                 <-
+                                               <-
+
+  * IP-Adresse "localhost" und dann
+    Port "2022" eingeben
+    -> Ausgabe: "Eine TCP-Verbindung zum
+       Server. Sie können nun Ihre Anfrage
+       an den Server stellen."
+    -> Bei eine falsche Eingabe:
+       -> "Falsche IP Adresse!\nAktuell sind
+           nur die Eingabe localhost oder die
+           IPv4-Adresse 127.0.0.1 möglich"
+       -> "Kein korrekter Port!\nAktuell
+           ist nur Port 2022 möglich"
+    -> Wenn sich der Client vor dem Server
+       anmeldet:
+       -> "Fehler beim Verbindungsaufbau.
+          Der Server wurde nicht gestartet."
+      <-
+   <-
+<-
+
+
+
+                                * Fehlerbehandlung *
+
+  * Bei einer ungültigen Eingabe vom Client wird die Fehlermeldung "400 BAD REQUEST" ausgegeben
+  * Bei einer Eingabe von "HISTORY" obwohl es keine vorherigen Eingaben gibt, wird die Fehlermeldung
+    "404 NOT FOUND" ausgegeben.
+  * Bei allen anderen Fehler antwortet der Server mit ERROR "500 INTERNAL SERVER ERROR".
+
+
+  * Eingabe: PING                               * Ausgabe: PONG
+
+  * Eingabe: ECHO <String>                      * Ausgabe: <String>
+
+  * Eingabe: CURRENT TIME                       * Ausgabe: HH:mm:ss
+
+  * Eingabe: CURRENT DATE                       * Ausgabe: dd.MM.yyyy
+
+  * Eingabe: HISTORY                            * Ausgabe: Alle bisher gestellten Anfragen werden ausgegeben
+
+  * Eingabe: HISTORY <Integer>                  * Ausgabe: Wir unterscheiden zwei Fälle:
+                                                     1. <Integer> ist <= als die Anzahl,
+                                                        der bisher gestellten Anfragen ist, dann
+                                                        werden die letzten <Integer> ausgegeben
+                                                     2. <Integer> ist >= die Anzahl,
+                                                        der bisher gestellten Anfragen ist, dann
+                                                        werden alle Anfragen ausgegeben
+
+                                                  Wenn die Eingabe keine Integer-Zahl ist, dann wird die
+                                                  Fehlermeldung "400 BAD REQUEST" ausgegeben.
+
+  * Eingabe: LATEST NEWS                        * Ausgabe: siehe bekannte Fehler
+
+  * Eingabe: HOLIDAYS                           * Ausgabe: <API-Server Response>
+
+  * Eingabe:GET <Adresse> <Ressource>           * Ausgabe: <Webserver Response>
+
+  * Eingabe: EXIT                               * Aufgabe: Verbindung wird geschlossen
+
+
+
+
+Bekannte Fehler:
+
+ * Bei Eingabe von "LATEST NEWS" ist die Antwort von API der Tagesschau für unsere Methode
+   writeUTF() (Server.java:181) zu lang und deshalb wird sie nicht an den Client gesendet.
+ * Der Client wird nach der Eingabe von "EXIT" nicht direkt beendet.
+   Das passiert erst nach dem zweiten Mal.
+ *
+
 
 ...
