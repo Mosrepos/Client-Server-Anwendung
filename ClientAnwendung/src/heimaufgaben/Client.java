@@ -12,8 +12,8 @@ public class Client {
 
     public Client() {
         try {
-            socket = new Socket(address, port);
-        } catch (IOException e) {
+            socket = new Socket(address, port); // Es wird ein neues Socket initialisiert, um die Verbindung herzustellen.
+        } catch (IOException e) { 
             System.out.println("Es gibt ein Problem mit dem Socket");
         }
     }
@@ -21,7 +21,8 @@ public class Client {
     public void startClient() {
         String serverNachricht, clientNachricht = "";
 
-        while (!(clientNachricht.equals("EXIT"))) {
+        while (!(clientNachricht.equals("EXIT"))) {  /* Die While-Schleife wird durchgegangen, 
+                                                     bis der Input-String "EXIT" entspricht, erst dann wird die Verbindung zum Server damit abgeschlossen*/    
             try {
 
                 in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
